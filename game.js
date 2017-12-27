@@ -1,3 +1,6 @@
+/* Please carefully go through this file
+   This is the heart of your game.
+*/
 //globals in one simple object
 var GAME = {
     level:0,           // game level chosen by user
