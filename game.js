@@ -120,7 +120,7 @@ var stopTimer = function () {
 var updateHallOfFame = function(time, outcome) {
     var timeid = GAME.level+"time";
     //var toonid= GAME.level+"toon";
-    if(outcome==true){
+    if(outcome==true&&time>=document.getElementById()){
         var c=timeid;
         console.log(c);
         var k=getFormattedTime(time);
@@ -146,10 +146,11 @@ var gameWon = function () {
 
 var updateBombsRemaining = function(value) {
     // TODO: set inner text of element with id "bombs" to the value 
+    value=format(value,2);
+
     document.getElementById("bombs").innerText=value;
     // use exactly 2 places (use leading 0 if single digit)
     // format method is given to you, use it.
-    format(value,2);
 }
 
 var handleLeftClick = function (row, col) {
