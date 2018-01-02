@@ -123,8 +123,8 @@ var updateHallOfFame = function(time, outcome) {
     if(outcome==true){
         var c=timeid;
         console.log(c);
-        var k=getFormattedTime(time);
-        document.getElementById(c).innerText=k;
+       // var k=getFormattedTime(time);
+        document.getElementById(c).innerText=time+"secs";
     }
     //
 }
