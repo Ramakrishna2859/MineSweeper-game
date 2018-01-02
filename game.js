@@ -120,7 +120,7 @@ var stopTimer = function () {
 var updateHallOfFame = function(time, outcome) {
     var timeid = GAME.level+"time";
     //var toonid= GAME.level+"toon";
-    if(outcome==true&&time>=document.getElementById()){
+    if(outcome==true){
         var c=timeid;
         console.log(c);
         var k=getFormattedTime(time);
@@ -413,12 +413,13 @@ var setBombs = function (row, col) {
     GAME.layout = zeros([GAME.rows, GAME.cols]);
 
     var i, j;
+    GAME.layout[row][col]=0;
     // place bombs
     for (var count = 0; count < GAME.bombs; count++) {
 
         i=randomInt(0,GAME.rows);
         j=randomInt(0,GAME.cols);
-        if(GAME.layout[i][j]==-1||(i==row&&j==col)||(i==row+1||i==row-1||j==col+1||j==col-1))
+        if((GAME.layout[i][j]==-1)||(i==row&&j==col)||(i==row&&j==col-1)||(i==row&&j==col+1)||(i==row-1&&j==col)||(i==row-1&&j==col-1)||(i==row-1&&j==col+1)||(i==row+1&&j==col+1)||(i==row+1&&j==col-1)||(i==row+1&&j==col))
             count--;
         else{
             GAME.layout[i][j]=-1;
@@ -430,7 +431,7 @@ var setBombs = function (row, col) {
         //      3. to place bomb you set corresponmding GAME.layout[i][j] to -1
         //      4. call updateNeighborCounts(i, j); if you place a bomb in ith row and jth column
     }
-    GAME.layout[row][col]='';
+    
 }
 
 var createBoard = function () {
