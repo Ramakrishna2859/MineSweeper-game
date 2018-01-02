@@ -23,7 +23,13 @@ var GAME = {
 
 var clearBoard = function () {
     // TODO: remove child nodes of element with id "gameboard"
+    var parent=document.getElementById("gameboard");
+    while(parent.firstChild){
+        parent.removeChild(parent.firstChild);
+    }
     // TODO: reset layout to new array
+    GAME.layout=new Array();
+    
 }
 
 var openCell = function (row, col) {
@@ -31,12 +37,17 @@ var openCell = function (row, col) {
     var cell = GAME.Cells[row][col];
 
     // TODO: remove "closed" class and add "open" class to the cell element
+    cell.classList.remove("closed");
+    cell.classList.add("open");
     // https://www.w3schools.com/jsref/prop_element_classlist.asp
     
     // TODO: call createBackFaceContent to create the content of cell
     // and append the content to the cell element as a child
+    var k=createBackFaceContent(row,col);
+    cell.appendChild(k);
 
     // TODO: increment total cell opened GAME.openCellCount
+    GAME.openCellCount++;
 }
 
 var openBoundary = function (row, col) {
@@ -45,12 +56,30 @@ var openBoundary = function (row, col) {
     // Note:   this will be a recursive methid (backtracking)
     
     // get the cell element belonging to that row and column
+    var count=0;
+    if((row>=GAME.rows||row<0||col<0||col>=GAME.cols))
+        return;
     var cell = GAME.Cells[row][col];
 
     // 1. if invalid row/col or cell is open, simply return
+    if((cell.classList.contains("open")))
+        return;
     //    To detect if cell is open, check if it has a class of "open"
     // 2. if it is a non-bomb cell (i.e. GAME.layout[row][col] >= 0) open the cell
+    if(GAME.layout[row][col]>=0){
+        openCell(row,col);
     // 3. if it is a blank cell recurse for all eight neighbors
+        if(GAME.layout[row][col]==0){
+            openBoundary(row-1,col);
+            openBoundary(row-1,col-1);
+            openBoundary(row,col-1);
+            openBoundary(row+1,col-1);
+            openBoundary(row+1,col);
+            openBoundary(row+1,col+1);
+            openBoundary(row,col+1);
+            openBoundary(row-1,col+1);
+        }
+    }
 }
 
 var endGame = function () {
@@ -62,10 +91,18 @@ var endGame = function () {
             //      (use contains property of classList method )
             //      https://www.w3schools.com/jsref/prop_element_classlist.asp
             // open the cell that is closed
+            if(cell.classList.contains("closed")==true){
+                openCell(row,col);
+            }
             // if cell is flagged (check if cell's "marked" attribure is set to "true")
             //      https://www.w3schools.com/jsref/met_element_getattribute.asp
             // then remove the flag (cell.firstchild) by using removeChild method on dom element
             //      https://www.w3schools.com/jsref/met_node_removechild.asp
+            if(cell.getAttribute("marked")=="true"){
+                cell.removeChild(cell.firstChild);
+            }
+            if((cell.getAttribute("marked")=="true")&&GAME.layout[row][col]!=-1)
+                cell.classList.add("Error");
             // if cell was marked but it does not have a bomb i.e. GAME.layout[row][col] != -1
             // then add "Error" class to the cell's dom element
         }
@@ -76,31 +113,43 @@ var stopTimer = function () {
     if (GAME.timer) { // timer is not undefined
         //TODO: https://www.w3schools.com/jsref/met_win_clearinterval.asp
         // clear Game.timer interval
+        clearInterval(GAME.timer);
     }
 }
 
 var updateHallOfFame = function(time, outcome) {
-    var timeid = GAME.level + "time";
-    var toonid = GAME.level + "toon";
-
+    var timeid = GAME.level+"time";
+    //var toonid= GAME.level+"toon";
+    if(outcome==true){
+        var c=timeid;
+        console.log(c);
+        var k=getFormattedTime(time);
+        document.getElementById(c).innerText=k;
+    }
     //
 }
 
 var gameOver = function () {
     //TODO: call stopTimer method to end the clock
+    stopTimer();
     updateHallOfFame(elapsedTimeInSeconds(), false);
+    //window.alert("you have lost the game????");
+
 }
 
 var gameWon = function () {
     stopTimer();
     document.getElementById("toon").className = "gametoon icon-emo-sunglasses";
     updateHallOfFame(elapsedTimeInSeconds(), true);
+    //window.alert("you have won the game!!!!");
 }
 
 var updateBombsRemaining = function(value) {
     // TODO: set inner text of element with id "bombs" to the value 
+    document.getElementById("bombs").innerText=value;
     // use exactly 2 places (use leading 0 if single digit)
     // format method is given to you, use it.
+    format(value,2);
 }
 
 var handleLeftClick = function (row, col) {
@@ -116,7 +165,11 @@ var handleLeftClick = function (row, col) {
             // make our gametoon unhappy
             document.getElementById("toon").className = "gametoon icon-emo-unhappy";
             // TODO: add "blast" class to the cell having the bomb clicked
-
+            
+    
+            var cell = GAME.Cells[row][col];
+            console.log("cell"+cell);
+            cell.classList.add("blast");
             gameOver(); // call gameOver
         } else {
             // open many cells till  boundary
@@ -129,6 +182,11 @@ var handleLeftClick = function (row, col) {
 
 var validMove = function (row, col) {
     // TODO: return true if GAME.Cells[row][col] dom element has a class of "closed"
+    var elem=GAME.Cells[row][col];
+    if(elem.classList.contains("closed"))
+        return true;
+    else   
+        return false;
 }
 
 var toggleMarkCell = function (row, col, marked) {
@@ -138,12 +196,22 @@ var toggleMarkCell = function (row, col, marked) {
         if (marked) {
             // TODO: set "marked" attribute of cell to "false"
             // TODO: remove cell.firstChild from cell
+            cell.setAttribute("marked","false");
+            cell.removeChild(cell.firstChild);
             GAME.flaggedCells--;
+            GAME.bombs++;
+            updateBombsRemaining(GAME.bombs);
         } else {
             // TODO: set "marked" attribute of cell to "true"
             // TODO: create an "i" element and set its "Class" attribute to "red icon-golf"
             //       append that to cell
+            cell.setAttribute("marked",true);
+            var i=document.createElement("i");
+            i.setAttribute("class","red icon-golf");
+            cell.append(i);
             GAME.flaggedCells++;
+            GAME.bombs--;
+            updateBombsRemaining(GAME.bombs);
         }
     }
 }
@@ -157,6 +225,10 @@ var indicateNeighbors = function (row, col) {
         for (j = col - 1; j <= col + 1; j++) {
             //TODO: if i, j are valid and not the current row/col and the cell is closed
             //      add "indicate" class to cell
+            var cell=GAME.cells[row][col];
+            if(i<GAME.rows&&i>=0&&j<GAME.cols&&j>=0&&(i!=row||j!=col)&&cell.classList.contains("closed")){
+                cell.classList.add("indicate");
+            }
             // https://www.w3schools.com/jsref/prop_element_classlist.asp
         }
     }
@@ -170,6 +242,10 @@ var resetNeighbors = function (row, col) {
             //TODO: if i, j are valid and not the current row/col and the cell is closed
             //      remove "indicate" class from cell
             // https://www.w3schools.com/jsref/prop_element_classlist.asp
+            var cell=GAME.cells[row][col];
+            if(i>=0&&i<GAME.rows&&j>=0&&j<GAME.cols&&(i!=row||j!=col)&&cell.classList.contains("closed")){
+                cell.classList.remove("indicate");
+            }
         }
     }
 }
@@ -190,17 +266,27 @@ var handleMouseEvents = function (mouseButton, row, col, marked) {
     // do we know total number of cells in the game
     // TODO: check for winning condition, if true
     //       call gameWon() method
+    if(GAME.openCellCount==((GAME.rows*GAME.cols)-(GAME.flaggedCells))&&GAME.flaggedCells){
+        gameWon();
+        //window.alert("you have won the game!!!!");
+    }
 }
 
 var createTD = function (row, col) {
     // https://www.w3schools.com/jsref/met_document_createelement.asp
     var cell;
+    cell= document.createElement("TD");
+    cell.setAttribute("row",row);
+    cell.setAttribute("col",col);
+    cell.setAttribute("class","closed");
+    cell.setAttribute("marked","false");
     // TODO: create "TD" element and set it to cell variable.
     //       Set following attributes on cell:
     //       "row" to value of row passed
     //       "col" to value of col passed
     //       "class" to "closed"
     //       "marked" to "false"
+    
     
     //attach mouse button up event handler
     cell.onmouseup = function (event) {
@@ -262,6 +348,7 @@ var createBackFaceContent = function (row, col) {
 // write a function that returns a random integer between min(inclusive) and max(exclusive)
 var randomInt = function (min, max) {
     //TODO: see https://www.w3schools.com/js/js_random.asp
+    return Math.floor(Math.random() *(max-min));
 }
 
 // this is implemented for you already
@@ -301,8 +388,22 @@ function zeros(dimensions) {
 
 var updateNeighborCounts = function (row, col) {
     var i, j;
+    console.log("row"+row);
+    console.log("col"+col);
     // TODO: for each neighborning non-bomb cell increment its value by 1
     // GAME.layout is a 2D array containing the values all initialized to 0 initially
+    for(i=row-1;i<=row+1;i++){
+        for(j=col-1;j<=col+1;j++){
+            if(i>=0&&j>=0&&i<GAME.rows&&j<GAME.cols){
+                console.log("i"+i);
+                console.log("j"+j);
+            
+               if((GAME.layout[i][j]!=-1)&&(i!=row||j!=col)){
+                    GAME.layout[i][j]=GAME.layout[i][j]+1;
+                }
+            }
+        }
+    }
 }
 
 // randomly place bombs
@@ -313,12 +414,22 @@ var setBombs = function (row, col) {
     var i, j;
     // place bombs
     for (var count = 0; count < GAME.bombs; count++) {
+
+        i=randomInt(0,GAME.rows);
+        j=randomInt(0,GAME.cols);
+        if(GAME.layout[i][j]==-1||(i==row&&j==col)||(i==row+1||i==row-1||j==col+1||j==col-1))
+            count--;
+        else{
+            GAME.layout[i][j]=-1;
+            updateNeighborCounts(i,j);
+        }
         //TODO: get random row/col using randomInt method you wrote earlier
         //NOTE: 1. check for duplicates, you should not place bomb in a location already having a bomb
         //      2. you cannot place a bomb in clicked row/col (passed variables) or in their immediate neighbors
         //      3. to place bomb you set corresponmding GAME.layout[i][j] to -1
         //      4. call updateNeighborCounts(i, j); if you place a bomb in ith row and jth column
     }
+    GAME.layout[row][col]='';
 }
 
 var createBoard = function () {
@@ -346,7 +457,8 @@ var createBoard = function () {
                                  // dom events on it easily
         }
         table.appendChild(gamerow); // append row to dom
-        GAME.Cells.push(gRow); // add the row to our 2D array
+        GAME.Cells.push(gRow);
+        // add the row to our 2D array
     }
 }
 
@@ -367,6 +479,18 @@ var startGame = function(row, col) {
 var getFormattedTime = function(timeInSeconds) {
     // TODO: given time in seconds return formatted time, e.g.
     //       178 seconds = 00:02:58
+    var secs=timeInSeconds%60;
+    var mins=Math.floor(timeInSeconds/60);
+    var hrs=Math.floor(mins/60);
+    mins=mins%60;
+    if(mins<10)
+        mins="0"+mins;
+    if(hrs<10)
+        hrs="0"+hrs;
+    if(secs<10)
+        secs="0"+secs;
+    return hrs+":"+mins+":"+secs;
+
 }
 
 // get elapsed time in seconds, see how it is implemented
