@@ -101,8 +101,8 @@ var endGame = function () {
             if(cell.getAttribute("marked")=="true"){
                 cell.removeChild(cell.firstChild);
             }
-            if((cell.getAttribute("marked")==true)&&GAME.layout[row][col]!=-1)
-                cell.classList.add("Error");
+            if((cell.getAttribute("marked")=="true")&&GAME.layout[row][col]!=-1)
+                cell.classList.add("error");
             // if cell was marked but it does not have a bomb i.e. GAME.layout[row][col] != -1
             // then add "Error" class to the cell's dom element
         }
