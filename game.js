@@ -119,29 +119,29 @@ var stopTimer = function () {
 
 var updateHallOfFame = function(time, outcome) {
     var timeid = GAME.level+"time";
-    //var toonid= GAME.level+"toon";
-    if(outcome==true){
-        var c=timeid;
-        console.log(c);
-       // var k=getFormattedTime(time);
-        document.getElementById(c).innerText=time+"secs";
+    var toonid= GAME.level+"toon";
+    if(outcome){
+        document.getElementById(timeid).innerText=time+"secs";
+        document.getElementById(toonid).className="gametoon icon-emo-sunglasses";
     }
-    //
+    else{
+        document.getElementById(timeid).innerText=time+"secs";
+        document.getElementById(toonid).className="gametoon icon-emo-unhappy";
+    }
 }
 
 var gameOver = function () {
     //TODO: call stopTimer method to end the clock
     stopTimer();
     updateHallOfFame(elapsedTimeInSeconds(), false);
-    //window.alert("you have lost the game????");
-
+    
 }
 
 var gameWon = function () {
     stopTimer();
     document.getElementById("toon").className = "gametoon icon-emo-sunglasses";
     updateHallOfFame(elapsedTimeInSeconds(), true);
-    //window.alert("you have won the game!!!!");
+    
 }
 
 var updateBombsRemaining = function(value) {
@@ -172,6 +172,9 @@ var handleLeftClick = function (row, col) {
             console.log("cell"+cell);
             cell.classList.add("blast");
             gameOver(); // call gameOver
+            window.alert("you have lost the game????");
+            clearBoard();
+            createBoard();
         } else {
             // open many cells till  boundary
             openBoundary(row, col); // open boundary till you get nonblank cell
@@ -270,6 +273,8 @@ var handleMouseEvents = function (mouseButton, row, col, marked) {
     if(GAME.openCellCount==((GAME.rows*GAME.cols)-(GAME.flaggedCells))&&GAME.bombs==0){
         gameWon();
         //window.alert("you have won the game!!!!");
+        //clearBoard();
+        //createBoard();
     }
 }
 
